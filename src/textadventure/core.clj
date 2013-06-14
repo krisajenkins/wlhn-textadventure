@@ -14,14 +14,15 @@
   [state item]
   (let [currently-at (@locations (:current-location @game-state))
         local-items (:items currently-at)]
-    (when-let [the-item (some item local-items)]
+    (when-let [the-item (some (fn [x] (if (item x) x)) local-items)]
+      (println "THE ITEM: " the-item)
       (swap! state (fn [current-game-state]
                      (merge current-game-state
                             {:inventory (conj (:inventory current-game-state) the-item)} )
                      ))
       (swap! locations (fn [current-location]
                          (update-in current-location [(:current-location @game-state) :items]
-                                    (fn [coll] (remove the-item coll))
+                                    (fn [coll] (remove item coll))
                                     ))))))
 
 (defn move
@@ -36,13 +37,14 @@
   [state]
   (let [currently-at (@locations (:current-location @game-state))]
     ( println "You see:")
-    (doall (map clojure.pprint/pprint (get-in currently-at [:items] ))))
-  )
+    (doall (map clojure.pprint/pprint (get-in currently-at [:items] )))))
 
 (def game-state (atom {:current-location :home
                        :inventory {}}))
 (move game-state :south)
 (move game-state :north)
+(move game-state :east)
 (look game-state)
 (pick game-state :key)
+(pick game-state :book)
 (clojure.pprint/pprint game-state)
